@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BURBANK — Entrar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@300;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black: #0A0A0A;
+    --black-soft: #161616;
+    --white: #FFFFFF;
+    --bone: #F5F5F4;
+    --gray: #8A8A8A;
+    --gray-line: #E3E2E0;
+    --error: #C53030;
+  }
+
+  *{ margin:0; padding:0; box-sizing:border-box; }
+
+  html, body{
+    font-family: 'Inter', sans-serif;
+    color: var(--black);
+    background: var(--white);
+    height:100%;
+  }
+
+  .screen{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    min-height:100vh;
+  }
+
+  /* ---------- LEFT PANEL ---------- */
+  .panel-left{
+    background: var(--black);
+    color: var(--white);
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    padding: 56px;
+    overflow:hidden;
+  }
+
+  .panel-left::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background-image: repeating-linear-gradient(
+      90deg,
+      rgba(255,255,255,0.045) 0px,
+      rgba(255,255,255,0.045) 1px,
+      transparent 1px,
+      transparent 64px
+    );
+    pointer-events:none;
+  }
+
+  .panel-left::after{
+    content:"";
+    position:absolute;
+    left:-30%;
+    bottom:-30%;
+    width:560px;
+    height:560px;
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:50%;
+  }
+
+  .brand-mark{
+    position:relative;
+    z-index:2;
+  }
+
+  .logo{
+    font-family:'Montserrat', sans-serif;
+    font-size: 17px;
+    letter-spacing: 0.04em;
+  }
+  .logo .bur{ font-weight:300; }
+  .logo .bank{ font-weight:700; }
+
+  .hero-copy{
+    position:relative;
+    z-index:2;
+    max-width: 420px;
+  }
+
+  .hero-copy .logo-big{
+    font-family:'Montserrat', sans-serif;
+    font-size: 64px;
+    line-height: 1;
+    letter-spacing: -0.01em;
+    margin-bottom: 28px;
+  }
+  .hero-copy .logo-big .bur{ font-weight:300; }
+  .hero-copy .logo-big .bank{ font-weight:700; }
+
+  .hero-copy p{
+    font-size: 15px;
+    line-height: 1.6;
+    color: rgba(255,255,255,0.6);
+    font-weight:400;
+  }
+
+  .panel-left .foot-note{
+    position:relative;
+    z-index:2;
+    font-size: 12px;
+    color: rgba(255,255,255,0.4);
+    display:flex;
+    justify-content:space-between;
+    border-top: 1px solid rgba(255,255,255,0.12);
+    padding-top: 20px;
+  }
+
+  /* ---------- RIGHT PANEL ---------- */
+  .panel-right{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 40px;
+    background: var(--white);
+  }
+
+  .form-wrap{
+    width:100%;
+    max-width: 380px;
+  }
+
+  .logo-mobile{
+    display:none;
+  }
+
+  .form-wrap h1{
+    font-size: 24px;
+    font-weight:600;
+    letter-spacing:-0.01em;
+    margin-bottom: 6px;
+  }
+
+  .form-wrap .sub{
+    font-size: 14px;
+    color: var(--gray);
+    margin-bottom: 32px;
+  }
+
+  /* Tabs */
+  .tabs{
+    display:flex;
+    background: var(--bone);
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 28px;
+    position:relative;
+  }
+
+  .tab-btn{
+    flex:1;
+    border:none;
+    background:transparent;
+    padding: 10px 0;
+    font-family:'Inter', sans-serif;
+    font-size: 13px;
+    font-weight:600;
+    color: var(--gray);
+    cursor:pointer;
+    border-radius: 7px;
+    position:relative;
+    z-index:2;
+    transition: color .25s ease;
+  }
+
+  .tab-btn.active{
+    color: var(--white);
+  }
+
+  .tab-indicator{
+    position:absolute;
+    top:4px;
+    left:4px;
+    width: calc(50% - 4px);
+    height: calc(100% - 8px);
+    background: var(--black);
+    border-radius: 7px;
+    transition: transform .28s cubic-bezier(.65,0,.35,1);
+    z-index:1;
+  }
+
+  .tab-btn[data-tab="qr"].active ~ .tab-indicator,
+  .tabs[data-active="qr"] .tab-indicator{
+    transform: translateX(100%);
+  }
+
+  /* Forms */
+  .pane{ display:none; }
+  .pane.active{ display:block; animation: fadeIn .35s ease; }
+
+  @keyframes fadeIn{
+    from{ opacity:0; transform: translateY(4px); }
+    to{ opacity:1; transform: translateY(0); }
+  }
+
+  .field{
+    margin-bottom: 18px;
+  }
+
+  .field label{
+    display:block;
+    font-size: 12px;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    color: var(--gray);
+    margin-bottom: 8px;
+  }
+
+  .field input{
+    width:100%;
+    border: 1.5px solid var(--gray-line);
+    border-radius: 10px;
+    padding: 13px 14px;
+    font-family:'Inter', sans-serif;
+    font-size: 15px;
+    font-weight:500;
+    color: var(--black);
+    background: var(--white);
+    transition: border-color .2s ease;
+  }
+
+  .field input::placeholder{
+    color: #B9B8B5;
+    font-weight:400;
+  }
+
+  .field input:focus{
+    outline: none;
+    border-color: var(--black);
+  }
+
+  .field input:focus-visible{
+    outline: 2px solid var(--black);
+    outline-offset: 1px;
+  }
+
+  .pwd-wrap{ position:relative; }
+  .pwd-toggle{
+    position:absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background:none;
+    border:none;
+    cursor:pointer;
+    font-size: 12px;
+    font-weight:600;
+    color: var(--gray);
+    font-family:'Inter', sans-serif;
+  }
+  .pwd-toggle:hover{ color: var(--black); }
+
+  .error-msg{
+    font-size: 13px;
+    color: var(--error);
+    margin-bottom: 16px;
+    min-height: 0;
+    display:none;
+  }
+  .error-msg.show{ display:block; }
+
+  .btn-primary{
+    width:100%;
+    background: var(--black);
+    color: var(--white);
+    border:none;
+    border-radius: 10px;
+    padding: 14px 0;
+    font-family:'Inter', sans-serif;
+    font-size: 14px;
+    font-weight:600;
+    letter-spacing: 0.01em;
+    cursor:pointer;
+    transition: opacity .2s ease, transform .1s ease;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+  }
+
+  .btn-primary:hover{ opacity:0.88; }
+  .btn-primary:active{ transform: scale(0.99); }
+  .btn-primary:disabled{ opacity:0.5; cursor:not-allowed; }
+  .btn-primary:focus-visible{ outline: 2px solid var(--black); outline-offset: 2px; }
+
+  .spinner{
+    width:14px; height:14px;
+    border:2px solid rgba(255,255,255,0.35);
+    border-top-color: var(--white);
+    border-radius:50%;
+    animation: spin .7s linear infinite;
+    display:none;
+  }
+  .spinner.show{ display:inline-block; }
+  @keyframes spin{ to{ transform: rotate(360deg); } }
+
+  /* QR pane */
+  .qr-box{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+    padding: 28px 20px 8px;
+    border: 1.5px dashed var(--gray-line);
+    border-radius: 14px;
+    margin-bottom: 20px;
+  }
+
+  .qr-frame{
+    width: 180px;
+    height: 180px;
+    border-radius: 12px;
+    background: var(--black);
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin-bottom: 18px;
+    overflow:hidden;
+  }
+
+  .qr-frame svg{ width: 100%; height:100%; }
+
+  .qr-frame .corner{
+    position:absolute;
+    width: 22px; height: 22px;
+    border: 2.5px solid var(--white);
+  }
+  .corner.tl{ top:8px; left:8px; border-right:none; border-bottom:none; }
+  .corner.tr{ top:8px; right:8px; border-left:none; border-bottom:none; }
+  .corner.bl{ bottom:8px; left:8px; border-right:none; border-top:none; }
+  .corner.br{ bottom:8px; right:8px; border-left:none; border-top:none; }
+
+  .qr-box p.qr-title{
+    font-size: 14px;
+    font-weight:600;
+    margin-bottom: 4px;
+  }
+
+  .qr-box p.qr-sub{
+    font-size: 13px;
+    color: var(--gray);
+    margin-bottom: 18px;
+    max-width: 260px;
+  }
+
+  .qr-refresh{
+    font-size: 12px;
+    font-weight:600;
+    color: var(--black);
+    background:none;
+    border:none;
+    border-bottom: 1.5px solid var(--black);
+    padding-bottom: 14px;
+    cursor:pointer;
+  }
+
+  .divider-row{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin: 28px 0 20px;
+  }
+  .divider-row .line{
+    flex:1;
+    height:1px;
+    background: var(--gray-line);
+  }
+  .divider-row span{
+    font-size: 12px;
+    color: var(--gray);
+    font-weight:500;
+  }
+
+  .signup-row{
+    text-align:center;
+  }
+
+  .btn-ghost{
+    width:100%;
+    background: transparent;
+    border: 1.5px solid var(--black);
+    color: var(--black);
+    border-radius: 10px;
+    padding: 13px 0;
+    font-family:'Inter', sans-serif;
+    font-size: 14px;
+    font-weight:600;
+    cursor:pointer;
+    transition: background .2s ease, color .2s ease;
+  }
+  .btn-ghost:hover{ background: var(--black); color: var(--white); }
+  .btn-ghost:focus-visible{ outline: 2px solid var(--black); outline-offset: 2px; }
+
+  /* Toast */
+  .toast{
+    position:fixed;
+    bottom: 28px;
+    left:50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--black);
+    color: var(--white);
+    padding: 13px 22px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight:500;
+    opacity:0;
+    pointer-events:none;
+    transition: all .3s ease;
+    z-index: 50;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  }
+  .toast.show{
+    opacity:1;
+    transform: translateX(-50%) translateY(0);
+  }
+  .toast.error{ background: var(--error); }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width: 880px){
+    .screen{
+      grid-template-columns: 1fr;
+    }
+    .panel-left{
+      min-height: 220px;
+      padding: 28px 24px;
+      justify-content: center;
+      align-items:flex-start;
+    }
+    .panel-left::after{ display:none; }
+    .hero-copy{ display:none; }
+    .brand-mark{ display:none; }
+    .logo-mobile{
+      display:block;
+      position:relative;
+      z-index:2;
+    }
+    .logo-mobile .logo-big{
+      font-family:'Montserrat', sans-serif;
+      font-size: 38px;
+    }
+    .logo-mobile .bur{ font-weight:300; }
+    .logo-mobile .bank{ font-weight:700; }
+    .logo-mobile p{
+      margin-top:8px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.55);
+    }
+    .panel-left .foot-note{ display:none; }
+    .panel-right{
+      padding: 32px 24px 48px;
+    }
+  }
+
+  @media (max-width: 380px){
+    .qr-frame{ width:150px; height:150px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="screen">
+
+  <!-- LEFT / BRAND PANEL -->
+  <div class="panel-left">
+    <div class="brand-mark">
+      <span class="logo"><span class="bur">BUR</span><span class="bank">BANK</span></span>
+    </div>
+
+    <div class="logo-mobile">
+      <span class="logo-big"><span class="bur">BUR</span><span class="bank">BANK</span></span>
+      <p>Seu banco digital.</p>
+    </div>
+
+    <div class="hero-copy">
+      <div class="logo-big"><span class="bur">BUR</span><span class="bank">BANK</span></div>
+      <p>Acesso seguro à sua conta. Gerencie seu saldo, cartão e movimentações em um só lugar.</p>
+    </div>
+
+    <div class="foot-note">
+      <span>© 2026 BURBANK</span>
+      <span>Ambiente seguro</span>
+    </div>
+  </div>
+
+  <!-- RIGHT / FORM PANEL -->
+  <div class="panel-right">
+    <div class="form-wrap">
+
+      <h1>Entrar na conta</h1>
+      <p class="sub">Use seu ID e senha, ou escaneie o QR Code.</p>
+
+      <div class="tabs" id="tabs" data-active="login">
+        <button class="tab-btn active" data-tab="login" id="tabLoginBtn">ID e senha</button>
+        <button class="tab-btn" data-tab="qr" id="tabQrBtn">QR Code</button>
+        <div class="tab-indicator"></div>
+      </div>
+
+      <!-- LOGIN PANE -->
+      <div class="pane active" id="paneLogin">
+        <form id="loginForm" autocomplete="off">
+          <div class="field">
+            <label for="userId">ID da conta</label>
+            <input type="text" id="userId" placeholder="Ex: 304221" inputmode="numeric" required>
+          </div>
+          <div class="field">
+            <label for="userPwd">Senha</label>
+            <div class="pwd-wrap">
+              <input type="password" id="userPwd" placeholder="••••••••" required>
+              <button type="button" class="pwd-toggle" id="pwdToggle">MOSTRAR</button>
+            </div>
+          </div>
+
+          <div class="error-msg" id="loginError"></div>
+
+          <button type="submit" class="btn-primary" id="loginSubmit">
+            <span class="spinner" id="loginSpinner"></span>
+            <span id="loginBtnText">Entrar</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- QR PANE -->
+      <div class="pane" id="paneQr">
+        <div class="qr-box">
+          <div class="qr-frame" id="qrFrame">
+            <div class="corner tl"></div>
+            <div class="corner tr"></div>
+            <div class="corner bl"></div>
+            <div class="corner br"></div>
+            <svg id="qrSvg" viewBox="0 0 29 29"></svg>
+          </div>
+          <p class="qr-title">Escaneie para entrar</p>
+          <p class="qr-sub">Abra o app BURBANK no seu celular e escaneie este código para acessar sua conta automaticamente.</p>
+        </div>
+        <div style="text-align:center;">
+          <button class="qr-refresh" id="qrRefresh">Gerar novo código</button>
+        </div>
+      </div>
+
+      <div class="divider-row">
+        <div class="line"></div>
+        <span>OU</span>
+        <div class="line"></div>
+      </div>
+
+      <div class="signup-row">
+        <button class="btn-ghost" id="goSignup">Ainda não tenho uma conta</button>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"><span id="toastMsg"></span></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+  // ⚠️ Substitua pelas credenciais do SEU projeto Firebase
+  const firebaseConfig = {
+    apiKey: "SUA_API_KEY",
+    authDomain: "SEU_PROJETO.firebaseapp.com",
+    databaseURL: "https://SEU_PROJETO-default-rtdb.firebaseio.com",
+    projectId: "SEU_PROJETO",
+    storageBucket: "SEU_PROJETO.appspot.com",
+    messagingSenderId: "SEU_SENDER_ID",
+    appId: "SEU_APP_ID"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  // ---------- TABS ----------
+  const tabs = document.getElementById('tabs');
+  const tabLoginBtn = document.getElementById('tabLoginBtn');
+  const tabQrBtn = document.getElementById('tabQrBtn');
+  const paneLogin = document.getElementById('paneLogin');
+  const paneQr = document.getElementById('paneQr');
+
+  function setTab(tab){
+    tabs.dataset.active = tab;
+    tabLoginBtn.classList.toggle('active', tab === 'login');
+    tabQrBtn.classList.toggle('active', tab === 'qr');
+    paneLogin.classList.toggle('active', tab === 'login');
+    paneQr.classList.toggle('active', tab === 'qr');
+    if(tab === 'qr') generateQr();
+  }
+
+  tabLoginBtn.addEventListener('click', () => setTab('login'));
+  tabQrBtn.addEventListener('click', () => setTab('qr'));
+
+  // ---------- PASSWORD TOGGLE ----------
+  const pwdInput = document.getElementById('userPwd');
+  const pwdToggle = document.getElementById('pwdToggle');
+  pwdToggle.addEventListener('click', () => {
+    const isPwd = pwdInput.type === 'password';
+    pwdInput.type = isPwd ? 'text' : 'password';
+    pwdToggle.textContent = isPwd ? 'OCULTAR' : 'MOSTRAR';
+  });
+
+  // ---------- TOAST ----------
+  const toast = document.getElementById('toast');
+  const toastMsg = document.getElementById('toastMsg');
+  let toastTimer;
+  function showToast(msg, type = 'default'){
+    clearTimeout(toastTimer);
+    toastMsg.textContent = msg;
+    toast.className = 'toast show' + (type === 'error' ? ' error' : '');
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 3200);
+  }
+
+  // ---------- LOGIN LOGIC ----------
+  const loginForm = document.getElementById('loginForm');
+  const loginError = document.getElementById('loginError');
+  const loginSubmit = document.getElementById('loginSubmit');
+  const loginSpinner = document.getElementById('loginSpinner');
+  const loginBtnText = document.getElementById('loginBtnText');
+
+  function setLoading(isLoading){
+    loginSubmit.disabled = isLoading;
+    loginSpinner.classList.toggle('show', isLoading);
+    loginBtnText.textContent = isLoading ? 'Verificando...' : 'Entrar';
+  }
+
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    loginError.classList.remove('show');
+    loginError.textContent = '';
+
+    const idDigitado = document.getElementById('userId').value.trim();
+    const senhaDigitada = document.getElementById('userPwd').value;
+
+    if(!idDigitado || !senhaDigitada){
+      loginError.textContent = 'Preencha o ID e a senha.';
+      loginError.classList.add('show');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const snapshot = await get(ref(db, 'contas'));
+
+      if(!snapshot.exists()){
+        loginError.textContent = 'Nenhuma conta encontrada no sistema.';
+        loginError.classList.add('show');
+        setLoading(false);
+        return;
+      }
+
+      const contas = snapshot.val();
+      let contaEncontrada = null;
+      let contaKey = null;
+
+      // Procura uma conta cujo campo "conta" (ID) corresponda ao digitado
+      for(const key in contas){
+        if(contas[key] && String(contas[key].conta) === idDigitado){
+          contaEncontrada = contas[key];
+          contaKey = key;
+          break;
+        }
+      }
+
+      if(!contaEncontrada){
+        loginError.textContent = 'ID não encontrado.';
+        loginError.classList.add('show');
+        setLoading(false);
+        return;
+      }
+
+      if(String(contaEncontrada.senha) !== senhaDigitada){
+        loginError.textContent = 'Senha incorreta.';
+        loginError.classList.add('show');
+        setLoading(false);
+        return;
+      }
+
+      // Login OK
+      showToast('Login realizado com sucesso!');
+      sessionStorage.setItem('burbank_uid', contaKey);
+      sessionStorage.setItem('burbank_nome', contaEncontrada.nome || '');
+
+      setTimeout(() => {
+        // Redirecione aqui para a página principal/dashboard da conta
+        // window.location.href = 'dashboard.html';
+      }, 900);
+
+    } catch(err){
+      console.error(err);
+      loginError.textContent = 'Erro ao conectar com o servidor. Tente novamente.';
+      loginError.classList.add('show');
+    } finally {
+      setLoading(false);
+    }
+  });
+
+  // ---------- QR CODE (gera um código visual de sessão) ----------
+  // Gera um padrão pseudo-aleatório em uma grade 29x29 para simular um QR Code visualmente.
+  function generateQr(){
+    const svg = document.getElementById('qrSvg');
+    svg.innerHTML = '';
+    const size = 29;
+    const cell = 1;
+    const seed = Date.now();
+    let rand = seed;
+    function pseudoRandom(){
+      rand = (rand * 9301 + 49297) % 233280;
+      return rand / 233280;
+    }
+
+    const ns = "http://www.w3.org/2000/svg";
+    const bg = document.createElementNS(ns, 'rect');
+    bg.setAttribute('width', size);
+    bg.setAttribute('height', size);
+    bg.setAttribute('fill', '#0A0A0A');
+    svg.appendChild(bg);
+    svg.setAttribute('viewBox', `0 0 ${size} ${size}`);
+
+    for(let y = 0; y < size; y++){
+      for(let x = 0; x < size; x++){
+        // pula áreas dos cantos para parecer "finder patterns" de QR
+        const inCorner =
+          (x < 7 && y < 7) || (x > size-8 && y < 7) || (x < 7 && y > size-8);
+        if(inCorner) continue;
+
+        if(pseudoRandom() > 0.58){
+          const rect = document.createElementNS(ns, 'rect');
+          rect.setAttribute('x', x);
+          rect.setAttribute('y', y);
+          rect.setAttribute('width', cell);
+          rect.setAttribute('height', cell);
+          rect.setAttribute('fill', '#FFFFFF');
+          svg.appendChild(rect);
+        }
+      }
+    }
+
+    // Desenha os "finder patterns" característicos de QR codes
+    function finder(ox, oy){
+      const outer = document.createElementNS(ns, 'rect');
+      outer.setAttribute('x', ox); outer.setAttribute('y', oy);
+      outer.setAttribute('width', 7); outer.setAttribute('height', 7);
+      outer.setAttribute('fill', '#FFFFFF');
+      svg.appendChild(outer);
+
+      const inner = document.createElementNS(ns, 'rect');
+      inner.setAttribute('x', ox+1.5); inner.setAttribute('y', oy+1.5);
+      inner.setAttribute('width', 4); inner.setAttribute('height', 4);
+      inner.setAttribute('fill', '#0A0A0A');
+      svg.appendChild(inner);
+
+      const core = document.createElementNS(ns, 'rect');
+      core.setAttribute('x', ox+2.5); core.setAttribute('y', oy+2.5);
+      core.setAttribute('width', 2); core.setAttribute('height', 2);
+      core.setAttribute('fill', '#FFFFFF');
+      svg.appendChild(core);
+    }
+    finder(0, 0);
+    finder(size-7, 0);
+    finder(0, size-7);
+  }
+
+  document.getElementById('qrRefresh').addEventListener('click', () => {
+    generateQr();
+    showToast('Novo código gerado.');
+  });
+
+  // ---------- IR PARA CADASTRO ----------
+  document.getElementById('goSignup').addEventListener('click', () => {
+    window.location.href = 'cadastro.html';
+  });
+
+</script>
+
+</body>
+</html>
