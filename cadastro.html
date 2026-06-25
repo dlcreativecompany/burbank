@@ -487,7 +487,7 @@
           <div class="field">
             <div class="field">
             <label for="contaid">ID da conta</label>
-            <input type="text" id="nome" placeholder="Ex: mariaoliveira" required>
+            <input type="text" id="contaId" placeholder="Ex: mariaoliveira" required>
             </div>
           </div>
 
@@ -587,14 +587,26 @@
     }
 
     function gerarNumeroCartao(){
-      // Gera algo no formato "5412 7734 8821 0093"
-      const groups = [];
-      groups.push('54' + Math.floor(10 + Math.random()*89));
-      for(let i=0; i<3; i++){
-        groups.push(String(Math.floor(1000 + Math.random()*9000)));
-      }
-      return groups.join(' ');
+  // Gera um formato personalizado: 123A4-567B8
+  const numeros = '0123456789';
+  const letras = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+  function aleatorio(origem, qtd) {
+    let resultado = '';
+    for (let i = 0; i < qtd; i++) {
+      resultado += origem.charAt(Math.floor(Math.random() * origem.length));
     }
+    return resultado;
+  }
+
+  // Parte antes do traço: 3 números + 1 letra + 1 número (Ex: 123A4)
+  const parte1 = aleatorio(numeros, 3) + aleatorio(letras, 1) + aleatorio(numeros, 1);
+  
+  // Parte depois do traço: 3 números + 1 letra + 1 número (Ex: 567B8)
+  const parte2 = aleatorio(numeros, 3) + aleatorio(letras, 1) + aleatorio(numeros, 1);
+
+  return `${parte1}-${parte2}`;
+}
 
     // ---------- SIGNUP LOGIC ----------
     const signupForm = document.getElementById('signupForm');
@@ -622,7 +634,6 @@
         const contaIdInput = document.getElementById('contaId').value.trim().toLowerCase().replace(/\s+/g, '');
         const senha = document.getElementById('senha').value;
         const senhaConfirm = document.getElementById('senhaConfirm').value;
-        const saldoInicial = parseFloat(document.getElementById('saldoInicial').value) || 0;
 
         // Validações de campos obrigatórios
         if (!nome || !contaIdInput || !senha || !senhaConfirm){
@@ -649,13 +660,6 @@
           return;
         }
 
-        if (saldoInicial < 0){
-          if (signupError) {
-            signupError.textContent = 'O depósito inicial não pode ser negativo.';
-            signupError.classList.add('show');
-          }
-          return;
-        }
 
         setLoading(true);
 
@@ -694,7 +698,7 @@
             senha: senha,
             nome: nome,
             cartao: novoCartao,
-            saldo: saldoInicial,
+
             criadoEm: new Date().toISOString()
           };
 

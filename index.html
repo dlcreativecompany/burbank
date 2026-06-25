@@ -8,6 +8,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@300;700&display=swap" rel="stylesheet">
+
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
 <style>
   :root{
     --black: #0A0A0A;
@@ -191,7 +194,6 @@
     z-index:1;
   }
 
-  .tab-btn[data-tab="qr"].active ~ .tab-indicator,
   .tabs[data-active="qr"] .tab-indicator{
     transform: translateX(100%);
   }
@@ -307,65 +309,47 @@
   .spinner.show{ display:inline-block; }
   @keyframes spin{ to{ transform: rotate(360deg); } }
 
-  /* QR pane */
+  /* 2. DESIGN CUSTOMIZADO DO CONTAINER DA CÂMERA */
   .qr-box{
     display:flex;
     flex-direction:column;
     align-items:center;
     text-align:center;
-    padding: 28px 20px 8px;
+    padding: 16px;
     border: 1.5px dashed var(--gray-line);
     border-radius: 14px;
     margin-bottom: 20px;
+    background: #FAFAFA;
+    overflow: hidden;
   }
 
-  .qr-frame{
-    width: 180px;
-    height: 180px;
-    border-radius: 12px;
+  #reader {
+    width: 100%;
+    max-width: 320px;
+    border: none !important; /* Remove bordas nativas feias da lib */
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  /* Ajustando elementos de texto de interface da lib html5-qrcode */
+  #reader button {
     background: var(--black);
-    position:relative;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    margin-bottom: 18px;
-    overflow:hidden;
+    color: var(--white);
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 12px;
+    cursor: pointer;
+    margin-top: 10px;
   }
-
-  .qr-frame svg{ width: 100%; height:100%; }
-
-  .qr-frame .corner{
-    position:absolute;
-    width: 22px; height: 22px;
-    border: 2.5px solid var(--white);
-  }
-  .corner.tl{ top:8px; left:8px; border-right:none; border-bottom:none; }
-  .corner.tr{ top:8px; right:8px; border-left:none; border-bottom:none; }
-  .corner.bl{ bottom:8px; left:8px; border-right:none; border-top:none; }
-  .corner.br{ bottom:8px; right:8px; border-left:none; border-top:none; }
-
-  .qr-box p.qr-title{
-    font-size: 14px;
-    font-weight:600;
-    margin-bottom: 4px;
-  }
+  #reader button:hover { opacity: 0.9; }
 
   .qr-box p.qr-sub{
     font-size: 13px;
     color: var(--gray);
-    margin-bottom: 18px;
-    max-width: 260px;
-  }
-
-  .qr-refresh{
-    font-size: 12px;
-    font-weight:600;
-    color: var(--black);
-    background:none;
-    border:none;
-    border-bottom: 1.5px solid var(--black);
-    padding-bottom: 14px;
-    cursor:pointer;
+    margin-top: 12px;
+    max-width: 280px;
   }
 
   .divider-row{
@@ -467,17 +451,12 @@
       padding: 32px 24px 48px;
     }
   }
-
-  @media (max-width: 380px){
-    .qr-frame{ width:150px; height:150px; }
-  }
 </style>
 </head>
 <body>
 
 <div class="screen">
 
-  <!-- LEFT / BRAND PANEL -->
   <div class="panel-left">
     <div class="brand-mark">
       <span class="logo"><span class="bur">BUR</span><span class="bank">BANK</span></span>
@@ -499,7 +478,6 @@
     </div>
   </div>
 
-  <!-- RIGHT / FORM PANEL -->
   <div class="panel-right">
     <div class="form-wrap">
 
@@ -512,12 +490,11 @@
         <div class="tab-indicator"></div>
       </div>
 
-      <!-- LOGIN PANE -->
       <div class="pane active" id="paneLogin">
         <form id="loginForm" autocomplete="off">
           <div class="field">
             <label for="userId">ID da conta</label>
-            <input type="text" id="userId" placeholder="Ex: 304221" inputmode="numeric" required>
+            <input type="text" id="userId" placeholder="Ex: mariaoliveira" required>
           </div>
           <div class="field">
             <label for="userPwd">Senha</label>
@@ -536,21 +513,10 @@
         </form>
       </div>
 
-      <!-- QR PANE -->
       <div class="pane" id="paneQr">
         <div class="qr-box">
-          <div class="qr-frame" id="qrFrame">
-            <div class="corner tl"></div>
-            <div class="corner tr"></div>
-            <div class="corner bl"></div>
-            <div class="corner br"></div>
-            <svg id="qrSvg" viewBox="0 0 29 29"></svg>
-          </div>
-          <p class="qr-title">Escaneie para entrar</p>
-          <p class="qr-sub">Abra o app BURBANK no seu celular e escaneie este código para acessar sua conta automaticamente.</p>
-        </div>
-        <div style="text-align:center;">
-          <button class="qr-refresh" id="qrRefresh">Gerar novo código</button>
+          <div id="reader"></div>
+          <p class="qr-sub">Aponte a câmera para o QR Code contendo as informações da sua conta para validar o acesso automático.</p>
         </div>
       </div>
 
@@ -575,7 +541,6 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-  // ⚠️ Substitua pelas credenciais do SEU projeto Firebase
   const firebaseConfig = {
     apiKey: "AIzaSyDnYjN-qbx_DGP2TgKdjnkbzvKSrNNLhG4",
     authDomain: "burbank-dlcc.firebaseapp.com",
@@ -590,12 +555,14 @@
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  // ---------- TABS ----------
+  // ---------- TABS & CONTROLE DA CÂMERA ----------
   const tabs = document.getElementById('tabs');
   const tabLoginBtn = document.getElementById('tabLoginBtn');
   const tabQrBtn = document.getElementById('tabQrBtn');
   const paneLogin = document.getElementById('paneLogin');
   const paneQr = document.getElementById('paneQr');
+
+  let html5QrcodeScanner = null;
 
   function setTab(tab){
     tabs.dataset.active = tab;
@@ -603,7 +570,12 @@
     tabQrBtn.classList.toggle('active', tab === 'qr');
     paneLogin.classList.toggle('active', tab === 'login');
     paneQr.classList.toggle('active', tab === 'qr');
-    if(tab === 'qr') generateQr();
+    
+    if(tab === 'qr') {
+      startCamera();
+    } else {
+      stopCamera();
+    }
   }
 
   tabLoginBtn.addEventListener('click', () => setTab('login'));
@@ -629,7 +601,7 @@
     toastTimer = setTimeout(() => toast.classList.remove('show'), 3200);
   }
 
-  // ---------- LOGIN LOGIC ----------
+  // ---------- LOGIN MANUAL ----------
   const loginForm = document.getElementById('loginForm');
   const loginError = document.getElementById('loginError');
   const loginSubmit = document.getElementById('loginSubmit');
@@ -660,9 +632,8 @@
 
     try {
       const snapshot = await get(ref(db, 'contas'));
-
       if(!snapshot.exists()){
-        loginError.textContent = 'Nenhuma conta encontrada no sistema.';
+        loginError.textContent = 'Nenhuma conta encontrada.';
         loginError.classList.add('show');
         setLoading(false);
         return;
@@ -672,9 +643,9 @@
       let contaEncontrada = null;
       let contaKey = null;
 
-      // Procura uma conta cujo campo "conta" (ID) corresponda ao digitado
+      const idLimpo = idDigitado.toLowerCase().trim();
       for(const key in contas){
-        if(contas[key] && String(contas[key].conta) === idDigitado){
+        if(contas[key] && String(contas[key].contaid).toLowerCase().trim() === idLimpo){
           contaEncontrada = contas[key];
           contaKey = key;
           break;
@@ -695,101 +666,126 @@
         return;
       }
 
-      // Login OK
       showToast('Login realizado com sucesso!');
       sessionStorage.setItem('burbank_uid', contaKey);
       sessionStorage.setItem('burbank_nome', contaEncontrada.nome || '');
-
-      setTimeout(() => {
-        // Redirecione aqui para a página principal/dashboard da conta
-        // window.location.href = 'dashboard.html';
-      }, 900);
+      setTimeout(() => { window.location.href = 'dashboard.html'; }, 900);
 
     } catch(err){
       console.error(err);
-      loginError.textContent = 'Erro ao conectar com o servidor. Tente novamente.';
+      loginError.textContent = 'Erro ao conectar. Tente novamente.';
       loginError.classList.add('show');
     } finally {
       setLoading(false);
     }
   });
 
-  // ---------- QR CODE (gera um código visual de sessão) ----------
-  // Gera um padrão pseudo-aleatório em uma grade 29x29 para simular um QR Code visualmente.
-  function generateQr(){
-    const svg = document.getElementById('qrSvg');
-    svg.innerHTML = '';
-    const size = 29;
-    const cell = 1;
-    const seed = Date.now();
-    let rand = seed;
-    function pseudoRandom(){
-      rand = (rand * 9301 + 49297) % 233280;
-      return rand / 233280;
+  // ---------- CONTROLE DA CÂMERA E LEITURA DE QR CODE ----------
+
+  function startCamera() {
+    // Instancia a biblioteca vinculada ao elemento #reader do HTML
+    if (!html5QrcodeScanner) {
+      html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
+        fps: 10, 
+        qrbox: { width: 220, height: 220 },
+        rememberLastUsedCamera: true
+      });
+      html5QrcodeScanner.render(onScanSuccess, onScanFailure);
     }
-
-    const ns = "http://www.w3.org/2000/svg";
-    const bg = document.createElementNS(ns, 'rect');
-    bg.setAttribute('width', size);
-    bg.setAttribute('height', size);
-    bg.setAttribute('fill', '#0A0A0A');
-    svg.appendChild(bg);
-    svg.setAttribute('viewBox', `0 0 ${size} ${size}`);
-
-    for(let y = 0; y < size; y++){
-      for(let x = 0; x < size; x++){
-        // pula áreas dos cantos para parecer "finder patterns" de QR
-        const inCorner =
-          (x < 7 && y < 7) || (x > size-8 && y < 7) || (x < 7 && y > size-8);
-        if(inCorner) continue;
-
-        if(pseudoRandom() > 0.58){
-          const rect = document.createElementNS(ns, 'rect');
-          rect.setAttribute('x', x);
-          rect.setAttribute('y', y);
-          rect.setAttribute('width', cell);
-          rect.setAttribute('height', cell);
-          rect.setAttribute('fill', '#FFFFFF');
-          svg.appendChild(rect);
-        }
-      }
-    }
-
-    // Desenha os "finder patterns" característicos de QR codes
-    function finder(ox, oy){
-      const outer = document.createElementNS(ns, 'rect');
-      outer.setAttribute('x', ox); outer.setAttribute('y', oy);
-      outer.setAttribute('width', 7); outer.setAttribute('height', 7);
-      outer.setAttribute('fill', '#FFFFFF');
-      svg.appendChild(outer);
-
-      const inner = document.createElementNS(ns, 'rect');
-      inner.setAttribute('x', ox+1.5); inner.setAttribute('y', oy+1.5);
-      inner.setAttribute('width', 4); inner.setAttribute('height', 4);
-      inner.setAttribute('fill', '#0A0A0A');
-      svg.appendChild(inner);
-
-      const core = document.createElementNS(ns, 'rect');
-      core.setAttribute('x', ox+2.5); core.setAttribute('y', oy+2.5);
-      core.setAttribute('width', 2); core.setAttribute('height', 2);
-      core.setAttribute('fill', '#FFFFFF');
-      svg.appendChild(core);
-    }
-    finder(0, 0);
-    finder(size-7, 0);
-    finder(0, size-7);
   }
 
-  document.getElementById('qrRefresh').addEventListener('click', () => {
-    generateQr();
-    showToast('Novo código gerado.');
-  });
+  function stopCamera() {
+    if (html5QrcodeScanner) {
+      html5QrcodeScanner.clear().then(() => {
+        html5QrcodeScanner = null;
+      }).catch(err => console.error("Erro ao fechar câmera:", err));
+    }
+  }
 
-  // ---------- IR PARA CADASTRO ----------
+  // Captura o QR Code, trata os dados linha por linha e valida no Realtime Database
+  async function onScanSuccess(decodedText) {
+    // Interrompe o scanner imediatamente para processar a requisição
+    stopCamera();
+    showToast("Processando QR Code...");
+
+    try {
+      const dadosQr = { conta: "", cartao: "", contaid: "" };
+      
+      // Divide o texto do QR Code por quebra de linha (enter)
+      const linhas = decodedText.split('\n');
+      
+      linhas.forEach(linha => {
+        const indexDoDoisPontos = linha.indexOf(':');
+        if (indexDoDoisPontos !== -1) {
+          const chave = linha.substring(0, indexDoDoisPontos).trim().toLowerCase();
+          const valor = linha.substring(indexDoDoisPontos + 1).trim();
+          
+          if (chave === "conta") dadosQr.conta = valor;
+          if (chave === "cartão" || chave === "cartao") dadosQr.cartao = valor;
+          if (chave === "contaid") dadosQr.contaid = valor.toLowerCase();
+        }
+      });
+
+      // Validação das propriedades do QR Code
+      if (!dadosQr.conta || !dadosQr.cartao || !dadosQr.contaid) {
+        showToast("QR Code inválido ou com campos ausentes.", "error");
+        setTimeout(startCamera, 2000); // Retoma o scanner após o erro
+        return;
+      }
+
+      // Consulta os dados no nó 'contas' do Firebase Realtime Database
+      const snapshot = await get(ref(db, 'contas'));
+      if (!snapshot.exists()) {
+        showToast("Nenhuma conta registrada no banco.", "error");
+        setTimeout(startCamera, 2000);
+        return;
+      }
+
+      const contas = snapshot.val();
+      let contaAutenticada = null;
+      let contaKey = null;
+
+      // Realiza a comparação cruzada tripla exata
+      for (const key in contas) {
+        const c = contas[key];
+        if (c && 
+            String(c.conta).trim() === dadosQr.conta &&
+            String(c.cartao).trim() === dadosQr.cartao &&
+            String(c.contaid).trim().toLowerCase() === dadosQr.contaid) {
+          contaAutenticada = c;
+          contaKey = key;
+          break;
+        }
+      }
+
+      if (contaAutenticada) {
+        showToast('Acesso autorizado via QR Code!');
+        sessionStorage.setItem('burbank_uid', contaKey);
+        sessionStorage.setItem('burbank_nome', contaAutenticada.nome || '');
+
+        setTimeout(() => {
+          window.location.href = 'dashboard.html';
+        }, 1200);
+      } else {
+        showToast("Acesso Negado: Dados não correspondem.", "error");
+        setTimeout(startCamera, 2500);
+      }
+
+    } catch (err) {
+      console.error(err);
+      showToast("Erro no servidor ao processar QR Code.", "error");
+      setTimeout(startCamera, 2500);
+    }
+  }
+
+  function onScanFailure(error) {
+    // Ignora erros contínuos enquanto busca foco pelo frame do QR Code
+  }
+
+  // ---------- REDIRECIONAMENTO DE CADASTRO ----------
   document.getElementById('goSignup').addEventListener('click', () => {
     window.location.href = 'cadastro.html';
   });
-
 </script>
 
 </body>
