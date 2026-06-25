@@ -538,7 +538,6 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-  // ⚠️ Use as MESMAS credenciais do projeto Firebase usadas no index.html
   const firebaseConfig = {
     apiKey: "AIzaSyDnYjN-qbx_DGP2TgKdjnkbzvKSrNNLhG4",
     authDomain: "burbank-dlcc.firebaseapp.com",
@@ -553,134 +552,137 @@
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  // ---------- NAVIGATION ----------
-  document.getElementById('backBtn').addEventListener('click', () => {
-    window.location.href = 'index.html';
-  });
-  document.getElementById('goLogin').addEventListener('click', () => {
-    window.location.href = 'index.html';
-  });
-  document.getElementById('goLoginAfterSuccess').addEventListener('click', () => {
-    window.location.href = 'index.html';
-  });
+  // ⚠️ ISSO GARANTE QUE O CÓDIGO SÓ RODA DEPOIS DO HTML ESTAR PRONTO NO GITHUB
+  document.addEventListener('DOMContentLoaded', () => {
 
-  // ---------- PASSWORD TOGGLES ----------
-  function bindToggle(inputId, btnId){
-    const input = document.getElementById(inputId);
-    const btn = document.getElementById(btnId);
-    btn.addEventListener('click', () => {
-      const isPwd = input.type === 'password';
-      input.type = isPwd ? 'text' : 'password';
-      btn.textContent = isPwd ? 'OCULTAR' : 'MOSTRAR';
+    // ---------- NAVIGATION ----------
+    document.getElementById('backBtn').addEventListener('click', () => {
+      window.location.href = 'index.html';
     });
-  }
-  bindToggle('senha', 'pwdToggle1');
-  bindToggle('senhaConfirm', 'pwdToggle2');
+    document.getElementById('goLogin').addEventListener('click', () => {
+      window.location.href = 'index.html';
+    });
+    document.getElementById('goLoginAfterSuccess').addEventListener('click', () => {
+      window.location.href = 'index.html';
+    });
 
-  // ---------- HELPERS ----------
-  function gerarIdConta(){
-    // ID numérico de 6 dígitos
-    return String(Math.floor(100000 + Math.random() * 900000));
-  }
-
-  function gerarNumeroCartao(){
-    // Gera algo no formato "5412 7734 8821 0093"
-    const groups = [];
-    groups.push('54' + Math.floor(10 + Math.random()*89)); // começa como bandeira fictícia
-    for(let i=0;i<3;i++){
-      groups.push(String(Math.floor(1000 + Math.random()*9000)));
+    // ---------- PASSWORD TOGGLES ----------
+    function bindToggle(inputId, btnId){
+      const input = document.getElementById(inputId);
+      const btn = document.getElementById(btnId);
+      if(!input || !btn) return; // Evita quebrar se o elemento não existir nesta página
+      btn.addEventListener('click', () => {
+        const isPwd = input.type === 'password';
+        input.type = isPwd ? 'text' : 'password';
+        btn.textContent = isPwd ? 'OCULTAR' : 'MOSTRAR';
+      });
     }
-    return groups.join(' ');
-  }
+    bindToggle('senha', 'pwdToggle1');
+    bindToggle('senhaConfirm', 'pwdToggle2');
 
-  // ---------- SIGNUP LOGIC ----------
-  const signupForm = document.getElementById('signupForm');
-  const signupError = document.getElementById('signupError');
-  const signupSubmit = document.getElementById('signupSubmit');
-  const signupSpinner = document.getElementById('signupSpinner');
-  const signupBtnText = document.getElementById('signupBtnText');
-
-  function setLoading(isLoading){
-    signupSubmit.disabled = isLoading;
-    signupSpinner.classList.toggle('show', isLoading);
-    signupBtnText.textContent = isLoading ? 'Criando conta...' : 'Criar minha conta';
-  }
-
-  signupForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    signupError.classList.remove('show');
-    signupError.textContent = '';
-
-    const nome = document.getElementById('nome').value.trim();
-    const senha = document.getElementById('senha').value;
-    const senhaConfirm = document.getElementById('senhaConfirm').value;
-    const saldoInicial = parseFloat(document.getElementById('saldoInicial').value) || 0;
-
-    if(!nome || !senha || !senhaConfirm){
-      signupError.textContent = 'Preencha todos os campos obrigatórios.';
-      signupError.classList.add('show');
-      return;
+    // ---------- HELPERS ----------
+    function gerarIdConta(){
+      return String(Math.floor(100000 + Math.random() * 900000));
     }
 
-    if(senha.length < 4){
-      signupError.textContent = 'A senha deve ter pelo menos 4 caracteres.';
-      signupError.classList.add('show');
-      return;
+    function gerarNumeroCartao(){
+      const groups = [];
+      groups.push('54' + Math.floor(10 + Math.random()*89));
+      for(let i=0;i<3;i++){
+        groups.push(String(Math.floor(1000 + Math.random()*9000)));
+      }
+      return groups.join(' ');
     }
 
-    if(senha !== senhaConfirm){
-      signupError.textContent = 'As senhas não coincidem.';
-      signupError.classList.add('show');
-      return;
+    // ---------- SIGNUP LOGIC ----------
+    const signupForm = document.getElementById('signupForm');
+    const signupError = document.getElementById('signupError');
+    const signupSubmit = document.getElementById('signupSubmit');
+    const signupSpinner = document.getElementById('signupSpinner');
+    const signupBtnText = document.getElementById('signupBtnText');
+
+    function setLoading(isLoading){
+      if(signupSubmit) signupSubmit.disabled = isLoading;
+      if(signupSpinner) signupSpinner.classList.toggle('show', isLoading);
+      if(signupBtnText) signupBtnText.textContent = isLoading ? 'Criando conta...' : 'Criar minha conta';
     }
 
-    if(saldoInicial < 0){
-      signupError.textContent = 'O depósito inicial não pode ser negativo.';
-      signupError.classList.add('show');
-      return;
-    }
+    if(signupForm) {
+      signupForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        signupError.classList.remove('show');
+        signupError.textContent = '';
 
-    setLoading(true);
+        const nome = document.getElementById('nome').value.trim();
+        const senha = document.getElementById('senha').value;
+        const senhaConfirm = document.getElementById('senhaConfirm').value;
+        const saldoInicial = parseFloat(document.getElementById('saldoInicial').value) || 0;
 
-    try {
-      // Garante que o ID gerado é único no banco
-      const contasRef = ref(db, 'contas');
-      const snapshot = await get(contasRef);
-      const contasExistentes = snapshot.exists() ? snapshot.val() : {};
+        if(!nome || !senha || !senhaConfirm){
+          signupError.textContent = 'Preencha todos os campos obrigatórios.';
+          signupError.classList.add('show');
+          return;
+        }
 
-      let novoId;
-      do {
-        novoId = gerarIdConta();
-      } while (Object.values(contasExistentes).some(c => String(c.conta) === novoId));
+        if(senha.length < 4){
+          signupError.textContent = 'A senha deve ter pelo menos 4 caracteres.';
+          signupError.classList.add('show');
+          return;
+        }
 
-      const novoCartao = gerarNumeroCartao();
-      const novaContaKey = 'uid_' + Date.now();
+        if(senha !== senhaConfirm){
+          signupError.textContent = 'As senhas não coincidem.';
+          signupError.classList.add('show');
+          return;
+        }
 
-      const novaConta = {
-        conta: novoId,
-        senha: senha,
-        nome: nome,
-        cartao: novoCartao,
-        saldo: saldoInicial,
-        criadoEm: new Date().toISOString()
-      };
+        if(saldoInicial < 0){
+          signupError.textContent = 'O depósito inicial não pode ser negativo.';
+          signupError.classList.add('show');
+          return;
+        }
 
-      await set(ref(db, 'contas/' + novaContaKey), novaConta);
+        setLoading(true);
 
-      // Mostra tela de sucesso com os dados gerados
-      document.getElementById('resultId').textContent = novoId;
-      document.getElementById('resultCard').textContent = novoCartao;
-      document.getElementById('resultName').textContent = nome;
+        try {
+          const contasRef = ref(db, 'contas');
+          const snapshot = await get(contasRef);
+          const contasExistentes = snapshot.exists() ? snapshot.val() : {};
 
-      document.getElementById('signupView').style.display = 'none';
-      document.getElementById('successView').classList.add('show');
+          let novoId;
+          do {
+            novoId = gerarIdConta();
+          } while (Object.values(contasExistentes).some(c => String(c.conta) === novoId));
 
-    } catch(err){
-      console.error(err);
-      signupError.textContent = 'Erro ao criar a conta. Tente novamente.';
-      signupError.classList.add('show');
-    } finally {
-      setLoading(false);
+          const novoCartao = gerarNumeroCartao();
+          const novaContaKey = 'uid_' + Date.now();
+
+          const novaConta = {
+            conta: novoId,
+            senha: senha,
+            nome: nome,
+            cartao: novoCartao,
+            saldo: saldoInicial,
+            criadoEm: new Date().toISOString()
+          };
+
+          await set(ref(db, 'contas/' + novaContaKey), novaConta);
+
+          document.getElementById('resultId').textContent = novoId;
+          document.getElementById('resultCard').textContent = novoCartao;
+          document.getElementById('resultName').textContent = nome;
+
+          document.getElementById('signupView').style.display = 'none';
+          document.getElementById('successView').classList.add('show');
+
+        } catch(err){
+          console.error(err);
+          signupError.textContent = 'Erro ao criar a conta. Tente novamente.';
+          signupError.classList.add('show');
+        } finally {
+          setLoading(false);
+        }
+      });
     }
   });
 </script>
