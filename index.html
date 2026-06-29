@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Burbank</title>
-<link rel="icon" href="/assets/bb.png" type="image/png">
+<title>Burbank | Entrar na conta</title>
+<link rel="icon" href="assets/favicon.png" type="image/png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@300;700&display=swap" rel="stylesheet">
@@ -703,16 +703,19 @@
   }
 
   // Captura o QR Code, trata os dados linha por linha e valida no Realtime Database
+  // Captura o QR Code, trata os dados linha por linha e valida no Realtime Database
   async function onScanSuccess(decodedText) {
     // Interrompe o scanner imediatamente para processar a requisição
     stopCamera();
     showToast("Processando QR Code...");
 
     try {
-      const dadosQr = { conta: "", cartao: "", contaid: "" };
+      // Agora só precisamos de conta e contaid
+      const dadosQr = { conta: "", contaid: "" };
       
-      // Divide o texto do QR Code por quebra de linha (enter)
-      const linhas = decodedText.split('\n');
+      // Divide o texto do QR Code por vírgula ou quebra de linha (para aceitar os dois formatos)
+      // Como o seu exemplo tem vírgulas (conta: 123456, contaid: oioi26), vamos dividir por vírgula também
+      const linhas = decodedText.includes(',') ? decodedText.split(',') : decodedText.split('\n');
       
       linhas.forEach(linha => {
         const indexDoDoisPontos = linha.indexOf(':');
@@ -721,13 +724,12 @@
           const valor = linha.substring(indexDoDoisPontos + 1).trim();
           
           if (chave === "conta") dadosQr.conta = valor;
-          if (chave === "cartão" || chave === "cartao") dadosQr.cartao = valor;
           if (chave === "contaid") dadosQr.contaid = valor.toLowerCase();
         }
       });
 
-      // Validação das propriedades do QR Code
-      if (!dadosQr.conta || !dadosQr.cartao || !dadosQr.contaid) {
+      // Validação: Agora NÃO checa mais o cartão, apenas conta e contaid
+      if (!dadosQr.conta || !dadosQr.contaid) {
         showToast("QR Code inválido ou com campos ausentes.", "error");
         setTimeout(startCamera, 2000); // Retoma o scanner após o erro
         return;
@@ -745,12 +747,11 @@
       let contaAutenticada = null;
       let contaKey = null;
 
-      // Realiza a comparação cruzada tripla exata
+      // Realiza a comparação cruzada dupla exata (sem o cartão)
       for (const key in contas) {
         const c = contas[key];
         if (c && 
             String(c.conta).trim() === dadosQr.conta &&
-            String(c.cartao).trim() === dadosQr.cartao &&
             String(c.contaid).trim().toLowerCase() === dadosQr.contaid) {
           contaAutenticada = c;
           contaKey = key;
